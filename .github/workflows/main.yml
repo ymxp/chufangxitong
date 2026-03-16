@@ -14,29 +14,12 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Build APK with Docker
+    - name: Build APK
       run: |
-        # 使用预配置的 Android 构建环境
-        docker run --rm -v $PWD:/app -w /app \
-          -e ANDROID_HOME=/usr/local/android-sdk \
-          -e ANDROID_SDK_ROOT=/usr/local/android-sdk \
-          -e ANDROID_SDK_HOME=/usr/local/android-sdk \
-          -e ANDROID_AVD_HOME=/usr/local/android-sdk/.android/avd \
-          cimg/android:2023.09.1 \
+        docker run --rm -v $PWD:/app -w /app ghcr.io/kivy/buildozer:latest \
           bash -c "
-            # 安装必要的依赖
-            sudo apt update && sudo apt install -y python3-pip python3-dev build-essential libssl-dev libffi-dev
-            pip3 install --upgrade pip
-            pip3 install cython==0.29.36 buildozer
-            
-            # 自动接受 Android SDK 许可证
-            yes | sdkmanager --licenses > /dev/null 2>&1 || true
-            
-            # 安装必要的 Android SDK 组件
-            sdkmanager 'platform-tools' 'platforms;android-27' 'build-tools;31.0.0'
-            
-            # 构建 APK
-            buildozer android debug --verbose
+            # 自动接受许可证
+            yes | buildozer android debug --verbose
           "
 
     - name: Upload APK
