@@ -14,10 +14,10 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Build APK with Docker
-      uses: docker://kivy/buildozer:latest
+    - name: Build APK
+      uses: ArtemSBulgakov/buildozer-action@v1
       with:
-        args: buildozer android debug
+        command: android debug
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
