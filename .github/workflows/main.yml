@@ -16,11 +16,19 @@ jobs:
 
     - name: Build APK
       run: |
-        docker run --rm -v $PWD:/app -w /app ghcr.io/kivy/buildozer:latest \
-          bash -c "
-            # 自动接受许可证
-            yes | buildozer android debug --verbose
-          "
+        # 安装必要的依赖
+        sudo apt update
+        sudo apt install -y python3-pip python3-dev build-essential libssl-dev libffi-dev
+
+        # 安装 Buildozer
+        pip3 install --upgrade pip
+        pip3 install cython==0.29.36 buildozer
+
+        # 初始化 Buildozer 配置（如果需要）
+        buildozer init || true
+
+        # 自动接受所有交互问题
+        echo y | buildozer android debug --verbose
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
