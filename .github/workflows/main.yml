@@ -14,50 +14,30 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.8'
-
-    - name: Install system dependencies
+    - name: Build APK with Docker
       run: |
-        sudo apt update
-        sudo apt install -y \
-            git \
-            curl \
-            unzip \
-            openjdk-11-jdk \
-            python3-pip \
-            python3-dev \
-            build-essential \
-            libssl-dev \
-            libffi-dev \
-            libxml2-dev \
-            libxslt1-dev \
-            zlib1g-dev \
-            libjpeg-dev \
-            libpng-dev \
-            libfreetype6-dev \
-            libgl1-mesa-dev \
-            libgles2-mesa-dev \
-            libglu1-mesa-dev \
-            libx11-dev \
-            libxext-dev \
-            libxrender-dev \
-            libfontconfig1-dev \
-            libharfbuzz-dev \
-            libfribidi-dev \
-            libxcb1-dev
-
-    - name: Install Python dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install cython==0.29.36
-        pip install buildozer
-
-    - name: Build APK
-      run: |
-        buildozer android debug --verbose
+        # 使用预配置的 Android 构建环境
+        docker run --rm -v $PWD:/app -w /app \
+          -e ANDROID_HOME=/usr/local/android-sdk \
+          -e ANDROID_SDK_ROOT=/usr/local/android-sdk \
+          -e ANDROID_SDK_HOME=/usr/local/android-sdk \
+          -e ANDROID_AVD_HOME=/usr/local/android-sdk/.android/avd \
+          cimg/android:2023.09.1 \
+          bash -c "
+            # 安装必要的依赖
+            sudo apt update && sudo apt install -y python3-pip python3-dev build-essential libssl-dev libffi-dev
+            pip3 install --upgrade pip
+            pip3 install cython==0.29.36 buildozer
+            
+            # 自动接受 Android SDK 许可证
+            yes | sdkmanager --licenses > /dev/null 2>&1 || true
+            
+            # 安装必要的 Android SDK 组件
+            sdkmanager 'platform-tools' 'platforms;android-27' 'build-tools;31.0.0'
+            
+            # 构建 APK
+            buildozer android debug --verbose
+          "
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
