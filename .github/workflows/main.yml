@@ -12,10 +12,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: '3.8'
 
@@ -24,6 +24,12 @@ jobs:
         python -m pip install --upgrade pip
         pip install cython
         pip install buildozer
+
+    - name: Accept Android SDK licenses
+      run: |
+        mkdir -p ~/.android
+        echo "24333f8a63b6825ea9c5514f83c2829b004d1fee" > ~/.android/repositories.cfg
+        yes | $ANDROID_HOME/tools/bin/sdkmanager --licenses || true
 
     - name: Build APK
       run: |
